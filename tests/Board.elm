@@ -9,7 +9,10 @@ import TicTacToe.Board exposing
   , Player(..)
   , reset
   , addMove
-  , isSpaceOccupied
+  , isSpaceEmpty
+  , winningTriplet
+  , winningTripletFromList
+  , isWinner
   )
 
 
@@ -19,14 +22,8 @@ suite =
     [ describe "reset"
       [ test "should take an empty board and return an empty board" <|
           \_ ->
-            let
-              board =
-                [ Empty, Empty, Empty
-                , Empty, Empty, Empty
-                , Empty, Empty, Empty
-                ]
-            in
-              Expect.equal emptyBoard (reset board)
+            reset emptyBoard
+              |> Expect.equal emptyBoard
       , test "should take a board with some occupied spaces and return an empty board" <|
           \_ ->
             let
@@ -36,7 +33,8 @@ suite =
                 , Empty, Occupied O, Empty
                 ]
             in
-              Expect.equal emptyBoard (reset board)
+              reset board
+                |> Expect.equal emptyBoard
       ]
     , describe "addMove"
       [ test "should take a Player, an index, and a board and return a board with that Player occupying the board at that index" <|
@@ -48,12 +46,14 @@ suite =
               , Empty, Empty, Empty
               ]
           in
-            Expect.equal board (addMove X 0 emptyBoard)
+            addMove X 0 emptyBoard
+              |> Expect.equal board 
       ]
-    , describe "isSpaceOccupied"
+    , describe "isSpaceEmpty"
       [ test "should return False when space is empty" <|
           \_ ->
-            Expect.equal False (isSpaceOccupied 0 emptyBoard)
+            isSpaceEmpty 0 emptyBoard
+              |> Expect.true "should be empty"
       , test "should return True when space is occupied" <|
           \_ -> 
             let 
@@ -63,7 +63,64 @@ suite =
                 , Empty, Empty, Empty
                 ]
             in
-              Expect.equal True (isSpaceOccupied 0 board)
+              isSpaceEmpty 0 board
+                |> Expect.false "should not be empty"
+      ]
+    , describe "winningTriplet"
+      [ test "should return false when index not in triplet" <|
+          \_ ->
+            winningTriplet (0,1,2) (3, Occupied X)
+              |> Expect.false "should return false"
+      , test "should return true when index in triplet" <|
+          \_ ->
+            winningTriplet (0,1,2) (0, Occupied X)
+              |> Expect.true "should return true"
+      ]
+    , describe "winningTripletFromList"
+      [ test "should return false when a winning triplet is not found" <|
+          \_ ->
+            let 
+              playerList =
+                [ (3, Occupied X)
+                , (4, Occupied X)
+                , (5, Occupied X)
+                ]
+            in
+              (0,1,2)
+                |> winningTripletFromList playerList
+                |> Expect.false "should return false"
+      , test "should return true when a winning triplet is found" <|
+          \_ ->
+            let 
+              playerList =
+                [ (3, Occupied X)
+                , (4, Occupied X)
+                , (5, Occupied X)
+                ]
+            in
+              (3,4,5)
+                |> winningTripletFromList playerList
+                |> Expect.true "should return true"
+      , test "should return false when a winning triplet is only partially found" <|
+          \_ ->
+            let 
+              playerList =
+                [ (3, Occupied X)
+                , (4, Occupied X)
+                , (6, Occupied X)
+                , (7, Occupied X)
+                ]
+            in
+              (3,4,5)
+                |> winningTripletFromList playerList
+                |> Expect.false "should return false"
+      ]
+    , describe "isWinner"
+      [ test "should return false when given an empty board" <|
+          \_ ->
+            emptyBoard
+              |> isWinner X
+              |> Expect.false "should return false"
       ]
     ]
 
