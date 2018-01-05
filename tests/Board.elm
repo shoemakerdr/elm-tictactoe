@@ -121,6 +121,65 @@ suite =
             emptyBoard
               |> isWinner X
               |> Expect.false "should return false"
+      , test "should return true when given the player X and a board with X as winner" <|
+          \_ ->
+            let
+              board =
+                [ Occupied X, Occupied X, Occupied X
+                , Empty , Empty, Empty
+                , Empty , Empty, Empty
+                ]
+            in
+              board
+                |> isWinner X
+                |> Expect.true "should return true"
+      , test "should return false when given the player O and a board with X as winner" <|
+          \_ ->
+            let
+              board =
+                [ Occupied X, Occupied X, Occupied X
+                , Empty , Empty, Empty
+                , Empty , Empty, Empty
+                ]
+            in
+              board
+                |> isWinner O
+                |> Expect.false "should return false"
+      , test "should return true when given the player X and a board with X as column winner" <|
+          \_ ->
+            let
+              board =
+                [ Occupied X, Empty, Empty
+                , Occupied X , Empty, Empty
+                , Occupied X , Empty, Empty
+                ]
+            in
+              board
+                |> isWinner X
+                |> Expect.true "should return true"
+      , test "should return true when given the player X and a board with X as diagonal winner" <|
+          \_ ->
+            let
+              board =
+                [ Occupied X, Empty, Empty
+                , Empty , Occupied X, Empty
+                , Empty , Empty, Occupied X
+                ]
+            in
+              board
+                |> isWinner X
+                |> Expect.true "should return true"
+      , test "should return false when given either player and a board with no winner" <|
+          \_ ->
+            let
+              board =
+                [ Occupied X, Occupied O, Occupied X
+                , Occupied X , Occupied O, Occupied X
+                , Occupied O , Occupied X, Occupied O
+                ]
+            in
+              (isWinner O board, isWinner X board)
+                |> Expect.equal (False, False)
       ]
     ]
 
