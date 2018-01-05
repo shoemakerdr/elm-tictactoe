@@ -4,7 +4,9 @@ module TicTacToe.Board exposing
   , Player(..)
   , emptyBoard
   , addMove
+  , isFull
   , isSpaceEmpty
+  , spaceToString
   , winningTriplet
   , winningTripletFromList
   , isWinner
@@ -49,6 +51,14 @@ addMove player index board =
     |> Array.toList
 
 
+isFull : Board -> Bool
+isFull board =
+  let
+    filtered = List.filter (\space -> space == Empty) board
+  in
+    List.length filtered == 0
+
+
 isSpaceEmpty : Int -> Board -> Bool
 isSpaceEmpty index board =
   let
@@ -64,6 +74,27 @@ isSpaceEmpty index board =
 
       Just (Occupied a) ->
         False
+
+spaceToString : Int -> Board -> String
+spaceToString index board =
+  let
+    arrBoard = Array.fromList board
+    space = Array.get index arrBoard
+  in
+    case space of
+      Nothing ->
+        ""
+
+      Just Empty ->
+        ""
+
+      Just (Occupied a) ->
+        case a of
+          X ->
+            "X"
+
+          O ->
+            "O"
 
 
 isWinner : Player -> Board -> Bool
