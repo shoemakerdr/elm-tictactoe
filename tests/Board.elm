@@ -9,6 +9,7 @@ import TicTacToe.Board exposing
   , Player(..)
   , emptyBoard
   , addMove
+  , isFull
   , isSpaceEmpty
   , winningTriplet
   , winningTripletFromList
@@ -32,12 +33,18 @@ suite =
             addMove X 0 emptyBoard
               |> Expect.equal board 
       ]
+    , describe "isFull"
+      [ test "should return false when given empty board" <|
+          \_ ->
+            isFull emptyBoard
+              |> Expect.false "should return false"
+      ]
     , describe "isSpaceEmpty"
-      [ test "should return False when space is empty" <|
+      [ test "should return false when space is empty" <|
           \_ ->
             isSpaceEmpty 0 emptyBoard
               |> Expect.true "should be empty"
-      , test "should return True when space is occupied" <|
+      , test "should return true when space is occupied" <|
           \_ -> 
             let 
               board = 
