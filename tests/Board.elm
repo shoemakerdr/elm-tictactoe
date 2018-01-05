@@ -7,7 +7,7 @@ import TicTacToe.Board exposing
   ( Board
   , Space(..)
   , Player(..)
-  , reset
+  , emptyBoard
   , addMove
   , isSpaceEmpty
   , winningTriplet
@@ -18,25 +18,8 @@ import TicTacToe.Board exposing
 
 suite : Test
 suite =
-  describe "Board helper functions"
-    [ describe "reset"
-      [ test "should take an empty board and return an empty board" <|
-          \_ ->
-            reset emptyBoard
-              |> Expect.equal emptyBoard
-      , test "should take a board with some occupied spaces and return an empty board" <|
-          \_ ->
-            let
-              board =
-                [ Empty, Empty, Occupied O
-                , Occupied X, Occupied X, Empty
-                , Empty, Occupied O, Empty
-                ]
-            in
-              reset board
-                |> Expect.equal emptyBoard
-      ]
-    , describe "addMove"
+  describe "Board module"
+    [ describe "addMove"
       [ test "should take a Player, an index, and a board and return a board with that Player occupying the board at that index" <|
         \_ ->
           let
@@ -183,10 +166,3 @@ suite =
       ]
     ]
 
-
-emptyBoard : Board
-emptyBoard = 
-  [ Empty, Empty, Empty
-  , Empty, Empty, Empty
-  , Empty, Empty, Empty
-  ]

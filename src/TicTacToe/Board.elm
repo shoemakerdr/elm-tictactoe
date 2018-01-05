@@ -2,7 +2,7 @@ module TicTacToe.Board exposing
   ( Board
   , Space(..)
   , Player(..)
-  , reset
+  , emptyBoard
   , addMove
   , isSpaceEmpty
   , winningTriplet
@@ -11,6 +11,10 @@ module TicTacToe.Board exposing
   )
 
 import Array
+
+
+
+-- BOARD TYPES
 
 
 type alias Board = List Space
@@ -26,12 +30,16 @@ type Space
   | Occupied Player
 
 
-reset : Board -> Board
-reset board =
+emptyBoard : Board
+emptyBoard =
   [ Empty, Empty, Empty
   , Empty, Empty, Empty
   , Empty, Empty, Empty
   ]
+
+
+
+-- HELPER FUNCTIONS
 
 
 addMove : Player -> Int -> Board -> Board
