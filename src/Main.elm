@@ -22,7 +22,13 @@ main =
 type alias Model =
   { board : Board
   , status : Status
+  , gameType : Maybe GameType
   }
+
+
+type GameType
+  = TwoPlayer
+  | OnePlayer (Maybe Player)
 
 
 type Status
@@ -34,7 +40,14 @@ type Status
 
 init : (Model, Cmd Msg)
 init =
-  ( Model emptyBoard (InProgress X)
+  ( Model emptyBoard (NotStarted) Nothing
+  , Cmd.none
+  )
+
+
+startGame : Player -> GameType -> (Model, Cmd Msg)
+startGame startingPlayer gameType =
+  ( Model emptyBoard (InProgress startingPlayer) (Just gameType)
   , Cmd.none
   )
 
@@ -46,6 +59,7 @@ init =
 type Msg
   = Move Int
   | Reset
+  | SetGameType GameType
 
 
 update : Msg -> Model -> (Model, Cmd Msg)
@@ -57,7 +71,7 @@ update msg model =
           let 
             newBoard = Board.addMove player index model.board
           in
-            ( Model newBoard (newStatus newBoard model.status)
+            ( Model newBoard (newStatus newBoard model.status) model.gameType
             , Cmd.none
             )
 
@@ -66,6 +80,19 @@ update msg model =
 
     Reset ->
       init
+
+    SetGameType gameType ->
+      case gameType of
+        TwoPlayer ->
+          startGame X TwoPlayer
+
+        OnePlayer Nothing ->
+          ( { model | gameType = Just (OnePlayer Nothing) }
+          , Cmd.none
+          )
+
+        OnePlayer (Just player) ->
+          startGame player gameType
 
 
 newStatus : Board -> Status -> Status
@@ -85,11 +112,9 @@ newStatus board status =
 nextPlayer : Player -> Player
 nextPlayer player =
   case player of
-    X ->
-      O
+    X -> O
+    O -> X
 
-    O ->
-      X
 
 
 -- VIEW
@@ -102,7 +127,27 @@ view model =
     , viewBoard model.board
     , h3 [] [ text (showStatus model.status) ]
     , button [ onClick Reset ] [ text "Reset Game" ]
+    , modalFromGameType model.gameType
     ]
+
+
+modalFromGameType : Maybe GameType -> Html Msg
+modalFromGameType gameType =
+    case gameType of
+      Nothing ->
+        viewModal "How many players?"
+          [ ("One Player", SetGameType (OnePlayer Nothing))
+          , ("Two Players", SetGameType TwoPlayer)
+          ]
+
+      Just (OnePlayer Nothing) ->
+        viewModal "Choose starting player: "
+          [ ("X", SetGameType (OnePlayer <| Just X))
+          , ("O", SetGameType (OnePlayer <| Just O))
+          ]
+
+      Just _ ->
+        text ""
 
 
 viewBoard : Board -> Html Msg
@@ -127,11 +172,24 @@ viewRow board from to =
     )
 
 
+viewModal : String -> List (String, Msg) -> Html Msg
+viewModal prompt pairs =
+  div []
+    [ text prompt
+    , div [] <| List.map buttonFromTuple pairs
+    ]
+
+
+buttonFromTuple : (String, Msg) -> Html Msg
+buttonFromTuple (buttonText, msg) =
+  button [ onClick msg ] [ text buttonText ]
+
+
 showStatus : Status -> String
 showStatus status =
   case status of
     NotStarted ->
-      ""
+      "Please choose game type to start"
 
     InProgress player ->
       (showPlayer player) ++ "'s turn"
@@ -148,6 +206,10 @@ showPlayer player =
   case player of
     X -> "X"
     O -> "O"
+
+
+
+-- STYLES
 
 
 spaceStyle : List (String, String)

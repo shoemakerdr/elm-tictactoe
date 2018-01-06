@@ -75,6 +75,7 @@ isSpaceEmpty index board =
       Just (Occupied a) ->
         False
 
+
 spaceToString : Int -> Board -> String
 spaceToString index board =
   let
@@ -90,11 +91,8 @@ spaceToString index board =
 
       Just (Occupied a) ->
         case a of
-          X ->
-            "X"
-
-          O ->
-            "O"
+          X -> "X"
+          O -> "O"
 
 
 isWinner : Player -> Board -> Bool
