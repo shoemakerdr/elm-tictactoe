@@ -1,6 +1,7 @@
 import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (..)
+import Random
 import TicTacToe.Board exposing (..)
 
 
@@ -52,6 +53,18 @@ startGame startingPlayer gameType =
   )
 
 
+randomPlayerGenerator : Random.Generator Player
+randomPlayerGenerator =
+    Random.bool
+        |> Random.map
+            (\randomBool ->
+                if randomBool then
+                    X
+                else
+                    O
+            )
+
+
 
 -- UPDATE
 
@@ -59,6 +72,7 @@ startGame startingPlayer gameType =
 type Msg
   = Move Int
   | Reset
+  | SetInitialPlayer Player
   | SetGameType GameType
 
 
@@ -89,10 +103,17 @@ update msg model =
     Reset ->
       init
 
+    SetInitialPlayer player ->
+      ( Model emptyBoard (InProgress player) (model.gameType)
+      , Cmd.none
+      )
+
     SetGameType gameType ->
       case gameType of
         TwoPlayer ->
-          startGame X TwoPlayer
+          ( { model | gameType = Just TwoPlayer }
+          , Random.generate SetInitialPlayer randomPlayerGenerator
+          )
 
         OnePlayer Nothing ->
           ( { model | gameType = Just (OnePlayer Nothing) }
@@ -100,7 +121,9 @@ update msg model =
           )
 
         OnePlayer (Just _) ->
-          startGame X gameType
+          ( { model | gameType = Just gameType }
+          , Random.generate SetInitialPlayer randomPlayerGenerator
+          )
 
 
 newStatus : Board -> Status -> Status
