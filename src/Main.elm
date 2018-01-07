@@ -1,7 +1,7 @@
 import Html exposing (..)
 import Html.Attributes exposing (style)
 import Html.Events exposing (..)
-import TicTacToe.Board as Board exposing (..)
+import TicTacToe.Board exposing (..)
 
 
 
@@ -68,12 +68,20 @@ update msg model =
     Move index ->
       case model.status of
         InProgress player ->
-          let 
-            newBoard = Board.addMove player index model.board
-          in
-            ( Model newBoard (newStatus newBoard model.status) model.gameType
-            , Cmd.none
-            )
+          case isSpaceEmpty index model.board of
+            True ->
+              let 
+                board =
+                    addMove player index model.board
+                status =
+                    newStatus board model.status
+              in
+                ( Model board status model.gameType
+                , Cmd.none
+                )
+
+            False ->
+              (model, Cmd.none)
 
         _  ->
           (model, Cmd.none)
@@ -91,17 +99,17 @@ update msg model =
           , Cmd.none
           )
 
-        OnePlayer (Just player) ->
-          startGame player gameType
+        OnePlayer (Just _) ->
+          startGame X gameType
 
 
 newStatus : Board -> Status -> Status
 newStatus board status =
   case status of
     InProgress player ->
-      if Board.isWinner player board == True then
+      if isWinner player board == True then
         Winner player
-      else if Board.isFull board == True then
+      else if isFull board == True then
         Draw
       else InProgress (nextPlayer player)
 
@@ -141,7 +149,7 @@ modalFromGameType gameType =
           ]
 
       Just (OnePlayer Nothing) ->
-        viewModal "Choose starting player: "
+        viewModal "Choose your player: "
           [ ("X", SetGameType (OnePlayer <| Just X))
           , ("O", SetGameType (OnePlayer <| Just O))
           ]
@@ -167,7 +175,7 @@ viewRow board from to =
         ( \index ->
             div
               [ style spaceStyle, onClick (Move index) ]
-              [ text (Board.spaceToString index board) ]
+              [ text (spaceToString index board) ]
         )
     )
 
