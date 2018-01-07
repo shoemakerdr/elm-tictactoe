@@ -3,18 +3,7 @@ module Board exposing (..)
 import Expect exposing (Expectation)
 import Fuzz exposing (Fuzzer, int, list, string)
 import Test exposing (..)
-import TicTacToe.Board exposing
-  ( Board
-  , Space(..)
-  , Player(..)
-  , emptyBoard
-  , addMove
-  , isFull
-  , isSpaceEmpty
-  , winningTriplet
-  , winningTripletFromList
-  , isWinner
-  )
+import TicTacToe.Board exposing (..)
 
 
 suite : Test
