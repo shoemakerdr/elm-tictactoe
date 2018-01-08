@@ -23,13 +23,15 @@ main =
 type alias Model =
   { board : Board
   , status : Status
-  , gameType : Maybe GameType
+  , gameType : GameType
   }
 
 
 type GameType
-  = TwoPlayer
-  | OnePlayer (Maybe (PlayerPair Player Player))
+  = NotChosen
+  | TwoPlayer
+  | OnePlayerNeedPlayerChoice
+  | OnePlayer (PlayerPair Player Player)
 
 
 type alias PlayerPair human computer = (human, computer)
@@ -44,14 +46,14 @@ type Status
 
 init : (Model, Cmd Msg)
 init =
-  ( Model emptyBoard (NotStarted) Nothing
+  ( Model emptyBoard (NotStarted) NotChosen
   , Cmd.none
   )
 
 
 startGame : Player -> GameType -> (Model, Cmd Msg)
 startGame startingPlayer gameType =
-  ( Model emptyBoard (InProgress startingPlayer) (Just gameType)
+  ( Model emptyBoard (InProgress startingPlayer) gameType
   , Cmd.none
   )
 
@@ -114,19 +116,22 @@ update msg model =
     SetGameType gameType ->
       case gameType of
         TwoPlayer ->
-          ( { model | gameType = Just TwoPlayer }
+          ( { model | gameType = TwoPlayer }
           , Random.generate SetInitialPlayer randomPlayerGenerator
           )
 
-        OnePlayer Nothing ->
-          ( { model | gameType = Just (OnePlayer Nothing) }
+        OnePlayerNeedPlayerChoice ->
+          ( { model | gameType = OnePlayerNeedPlayerChoice }
           , Cmd.none
           )
 
-        OnePlayer (Just _) ->
-          ( { model | gameType = Just gameType }
+        OnePlayer _ ->
+          ( { model | gameType = gameType }
           , Random.generate SetInitialPlayer randomPlayerGenerator
           )
+
+        NotChosen ->
+          (model, Cmd.none)
 
 
 newStatus : Board -> Status -> Status
@@ -165,22 +170,22 @@ view model =
     ]
 
 
-modalFromGameType : Maybe GameType -> Html Msg
+modalFromGameType : GameType -> Html Msg
 modalFromGameType gameType =
     case gameType of
-      Nothing ->
+      NotChosen ->
         viewModal "How many players?"
-          [ ("One Player", SetGameType (OnePlayer Nothing))
+          [ ("One Player", SetGameType OnePlayerNeedPlayerChoice)
           , ("Two Players", SetGameType TwoPlayer)
           ]
 
-      Just (OnePlayer Nothing) ->
+      OnePlayerNeedPlayerChoice ->
         viewModal "Choose your player: "
-          [ ("X", SetGameType (OnePlayer <| Just (X, O)))
-          , ("O", SetGameType (OnePlayer <| Just (O, X)))
+          [ ("X", SetGameType <| OnePlayer (X, O))
+          , ("O", SetGameType <| OnePlayer (O, X))
           ]
 
-      Just _ ->
+      _ ->
         text ""
 
 
