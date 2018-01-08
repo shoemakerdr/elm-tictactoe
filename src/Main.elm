@@ -29,7 +29,10 @@ type alias Model =
 
 type GameType
   = TwoPlayer
-  | OnePlayer (Maybe Player)
+  | OnePlayer (Maybe (PlayerPair Player Player))
+
+
+type alias PlayerPair human computer = (human, computer)
 
 
 type Status
@@ -173,8 +176,8 @@ modalFromGameType gameType =
 
       Just (OnePlayer Nothing) ->
         viewModal "Choose your player: "
-          [ ("X", SetGameType (OnePlayer <| Just X))
-          , ("O", SetGameType (OnePlayer <| Just O))
+          [ ("X", SetGameType (OnePlayer <| Just (X, O)))
+          , ("O", SetGameType (OnePlayer <| Just (O, X)))
           ]
 
       Just _ ->
