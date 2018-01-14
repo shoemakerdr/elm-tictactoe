@@ -3,6 +3,7 @@ import Html.Attributes exposing (style)
 import Html.Events exposing (..)
 import Random
 import TicTacToe.Board exposing (..)
+import TicTacToe.ComputerPlayer exposing (..)
 
 
 
@@ -51,13 +52,6 @@ init =
   )
 
 
-startGame : Player -> GameType -> (Model, Cmd Msg)
-startGame startingPlayer gameType =
-  ( Model emptyBoard (InProgress startingPlayer) gameType
-  , Cmd.none
-  )
-
-
 randomPlayerGenerator : Random.Generator Player
 randomPlayerGenerator =
     Random.bool
@@ -89,29 +83,65 @@ update msg model =
         InProgress player ->
           case isSpaceEmpty index model.board of
             True ->
-              let 
+              let
                 board =
                     addMove player index model.board
                 status =
                     newStatus board model.status
               in
-                ( Model board status model.gameType
-                , Cmd.none
-                )
+                case model.gameType of
+                  TwoPlayer ->
+                    ( Model board status model.gameType
+                    , Cmd.none
+                    )
+
+                  OnePlayer (human, computer) ->
+                    if player == computer then
+                      ( Model board status model.gameType
+                      , Cmd.none
+                      )
+                    else
+                      ( Model board status model.gameType
+                      , Random.generate Move <| randomSpaceGenerator board
+                      )
+
+                  NotChosen ->
+                    model ! []
+
+                  OnePlayerNeedPlayerChoice ->
+                    model ! []
 
             False ->
-              (model, Cmd.none)
+              model ! []
 
         _  ->
-          (model, Cmd.none)
+          model ! []
 
     Reset ->
       init
 
     SetInitialPlayer player ->
-      ( Model emptyBoard (InProgress player) (model.gameType)
-      , Cmd.none
-      )
+      case model.gameType of
+        TwoPlayer ->
+          ( Model emptyBoard (InProgress player) (model.gameType)
+          , Cmd.none
+          )
+
+        OnePlayer (human, computer) ->
+          let
+            command =
+              if player == human then
+                Cmd.none
+              else
+                Random.generate Move <| randomSpaceGenerator model.board
+          in
+            ( Model emptyBoard (InProgress player) (model.gameType)
+            , command
+            )
+
+        _ ->
+          model ! []
+
 
     SetGameType gameType ->
       case gameType of
